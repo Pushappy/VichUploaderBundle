@@ -15,7 +15,7 @@ use Vich\UploaderBundle\Mapping\PropertyMappingFactory;
  *
  * @author Stefan Zerkalica <zerkalica@gmail.com>
  */
-final class GaufretteStorage extends AbstractStorage
+class GaufretteStorage extends AbstractStorage
 {
     /**
      * Constructs a new instance of FileSystemStorage.
