@@ -2,6 +2,7 @@
 
 namespace Vich\UploaderBundle\EventListener\Doctrine;
 
+use Doctrine\ORM\Event\OnFlushEventArgs;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 /**
@@ -18,16 +19,16 @@ class UploadListener extends BaseListener
      *
      * @throws \Vich\UploaderBundle\Exception\MappingNotFoundException
      */
-    public function prePersist(LifecycleEventArgs $event): void
+    public function onFlush(OnFlushEventArgs $event): void
     {
-        $object = $event->getObject();
+        $uow = $event->getObjectManager()->getUnitOfWork();
+        foreach ($uow->getScheduledEntityInsertions() as $entity) {
+            if (!$this->isUploadable($entity)) { continue; }
 
-        if (!$this->isUploadable($object)) {
-            return;
-        }
-
-        foreach ($this->getUploadableFields($object) as $field) {
-            $this->handler->upload($object, $field);
+            foreach ($this->getUploadableFields($entity) as $field) {
+                $this->handler->upload($entity, $field);
+                $uow->recomputeSingleEntityChangeSet($event->getObjectManager()->getClassMetadata($entity::class), $entity);
+            }
         }
     }
 
